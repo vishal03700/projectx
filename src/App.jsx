@@ -254,7 +254,7 @@ function App() {
               component={Link}
               to="/"
             >
-              EYESOME
+              Help Line
             </Typography>
           </Stack>
 
