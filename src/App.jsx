@@ -11,6 +11,7 @@ import {
   Paper,
   Divider,
   Snackbar,
+  Button, // Import Button component
 } from "@mui/material";
 import "./App.css";
 import "@fontsource/roboto/300.css";
@@ -30,10 +31,15 @@ import ClearIcon from "@mui/icons-material/Clear";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import SearchIcon from "@mui/icons-material/Search";
 import ListItems from "./components/search";
+
+// Context creation for shared state
 export const AppData = createContext();
+
 function App() {
   const theme = useTheme();
   const mobile = useMediaQuery(theme.breakpoints.only("xs"));
+
+  // Currency conversion function
   const priceconversion = (pricevalue) => {
     return new Intl.NumberFormat("en-IN", {
       style: "currency",
@@ -41,6 +47,8 @@ function App() {
       maximumSignificantDigits: pricevalue?.toString().length,
     }).format(pricevalue);
   };
+
+  // Initial state for the app
   const initialstate = {
     wishlist: [],
     bag: [],
@@ -56,158 +64,107 @@ function App() {
     open_dialog: false,
     isAuthenticated: false,
   };
-  const reducer = (state, action) => {
-    if (action.type === "add-to-wishlist") {
-      return {
-        ...state,
-        wishlist: [
-          ...state.wishlist,
-          products.find((el) => el.name === action.payload),
-        ],
-      };
-    }
-    if (action.type === "remove-from-wishlist") {
-      return {
-        ...state,
-        wishlist: state.wishlist.filter((el) => el.name !== action.payload),
-      };
-    }
-    if (action.type === "search-items") {
-      return {
-        ...state,
-        ishide: action.payload.length === 0 ? false : true,
-        filteredItems: products.filter((el) =>
-          el.name
-            .toUpperCase()
-            .toLowerCase()
-            .includes(action.payload.toLowerCase())
-        ),
-        value: action.payload,
-      };
-    }
-    if (action.type === "open-drawer") {
-      return {
-        ...state,
-        show_drawer: true,
-      };
-    }
-    if (action.type === "close-drawer") {
-      return {
-        ...state,
-        show_drawer: false,
-      };
-    }
-    if (action.type === "close-searchlist-on-select") {
-      return {
-        ...state,
-        value: "",
-        ishide: false,
-      };
-    }
-    if (action.type === "show-snackbar") {
-      return {
-        ...state,
-        showalert: true,
-        alert_text: "Item added to cart",
-      };
-    }
-    if (action.type === "hide-snackbar") {
-      return {
-        ...state,
-        showalert: true,
-        alert_text: "Item removed from cart",
-      };
-    }
-    if (action.type === "close-alert") {
-      return {
-        ...state,
-        showalert: false,
-      };
-    }
-    if (action.type == "add-to-bag") {
-      const bagItem = products.find((el) => el.name === action.payload);
-      return {
-        ...state,
-        cartItems: [...state.cartItems, { ...bagItem, quantity: 1 }],
-      };
-    }
-    if (action.type === "clear-cart") {
-      return {
-        ...state,
-        cartItems: [],
-      };
-    }
-    if (action.type === "increment") {
-      return {
-        ...state,
-        cartItems: state.cartItems.map((item) =>
-          item.name === action.payload
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        ),
-      };
-    }
 
-    if (action.type === "decrement") {
-      return {
-        ...state,
-        cartItems: state.cartItems.map((item) =>
-          item.name === action.payload
-            ? { ...item, quantity: item.quantity - 1 }
-            : item
-        ),
-      };
-    }
-    if (action.type == "remove-item") {
-      return {
-        ...state,
-        cartItems: state.cartItems.filter(
-          (item) => item.name !== action.payload
-        ),
-      };
-    }
-    if (action.type === "open-dialog") {
-      return {
-        ...state,
-        open_dialog: true,
-      };
-    }
-    if (action.type === "close-dialog") {
-      return {
-        ...state,
-        open_dialog: false,
-      };
-    }
-    if (action.type === "mobile-search-list") {
-      return {
-        ...state,
-        filteredItems: products.filter((el) =>
-          el.name
-            .toUpperCase()
-            .toLowerCase()
-            .includes(action.payload.toLowerCase())
-        ),
-        value: action.payload,
-      };
-    }
-    if (action.type === "logged-in") {
-      return {
-        ...state,
-        isAuthenticated: true,
-      };
-    } else {
-      return state;
+  // Reducer function to handle actions
+  const reducer = (state, action) => {
+    switch (action.type) {
+      case "add-to-wishlist":
+        return {
+          ...state,
+          wishlist: [
+            ...state.wishlist,
+            products.find((el) => el.name === action.payload),
+          ],
+        };
+      case "remove-from-wishlist":
+        return {
+          ...state,
+          wishlist: state.wishlist.filter((el) => el.name !== action.payload),
+        };
+      case "search-items":
+        return {
+          ...state,
+          ishide: action.payload.length === 0 ? false : true,
+          filteredItems: products.filter((el) =>
+            el.name
+              .toUpperCase()
+              .toLowerCase()
+              .includes(action.payload.toLowerCase())
+          ),
+          value: action.payload,
+        };
+      case "open-drawer":
+        return { ...state, show_drawer: true };
+      case "close-drawer":
+        return { ...state, show_drawer: false };
+      case "close-searchlist-on-select":
+        return { ...state, value: "", ishide: false };
+      case "show-snackbar":
+        return { ...state, showalert: true, alert_text: "Item added to cart" };
+      case "hide-snackbar":
+        return { ...state, showalert: true, alert_text: "Item removed from cart" };
+      case "close-alert":
+        return { ...state, showalert: false };
+      case "add-to-bag":
+        const bagItem = products.find((el) => el.name === action.payload);
+        return { ...state, cartItems: [...state.cartItems, { ...bagItem, quantity: 1 }] };
+      case "clear-cart":
+        return { ...state, cartItems: [] };
+      case "increment":
+        return {
+          ...state,
+          cartItems: state.cartItems.map((item) =>
+            item.name === action.payload
+              ? { ...item, quantity: item.quantity + 1 }
+              : item
+          ),
+        };
+      case "decrement":
+        return {
+          ...state,
+          cartItems: state.cartItems.map((item) =>
+            item.name === action.payload
+              ? { ...item, quantity: item.quantity - 1 }
+              : item
+          ),
+        };
+      case "remove-item":
+        return {
+          ...state,
+          cartItems: state.cartItems.filter((item) => item.name !== action.payload),
+        };
+      case "open-dialog":
+        return { ...state, open_dialog: true };
+      case "close-dialog":
+        return { ...state, open_dialog: false };
+      case "mobile-search-list":
+        return {
+          ...state,
+          filteredItems: products.filter((el) =>
+            el.name
+              .toUpperCase()
+              .toLowerCase()
+              .includes(action.payload.toLowerCase())
+          ),
+          value: action.payload,
+        };
+      case "logged-in":
+        return { ...state, isAuthenticated: true };
+      default:
+        return state;
     }
   };
+
+  // UseReducer hook
   const [state, dispatch] = useReducer(reducer, initialstate);
+
+  // Snackbar for showing add/remove cart messages
   const clear_button = (
-    <IconButton
-      onClick={() => dispatch({ type: "close-alert" })}
-      color="inherit"
-    >
+    <IconButton onClick={() => dispatch({ type: "close-alert" })} color="inherit">
       <ClearIcon />
     </IconButton>
   );
+
   const snackbar_item = (
     <Snackbar
       message={state.alert_text}
@@ -221,6 +178,8 @@ function App() {
       autoHideDuration={1000}
     />
   );
+
+  // Function to add or remove items from the wishlist
   const add_to_wishlist = (itemname) => {
     if (state.wishlist.find((el) => el.name === itemname)) {
       dispatch({ type: "remove-from-wishlist", payload: itemname });
@@ -230,10 +189,11 @@ function App() {
       dispatch({ type: "show-snackbar" });
     }
   };
+
+  // Check if an item is already in the cart
   const isItem_added_to_bag = (itemname) =>
-    state.cartItems.find((el) => el.name === itemname)
-      ? "Go to bag"
-      : "Add to bag";
+    state.cartItems.find((el) => el.name === itemname) ? "Go to bag" : "Add to bag";
+
   return (
     <HashRouter>
       <AppBar sx={{ p: 1, boxShadow: 0 }} position="static" color="inherit">
@@ -400,6 +360,23 @@ function App() {
                 <ShoppingBagOutlinedIcon />
               </Badge>
             </IconButton>
+
+            {/* Appointment Button */}
+            <Button
+              sx={{
+                backgroundColor: "#eab308",
+                color: "white",
+                "&:hover": {
+                  backgroundColor: "#a16207",
+                },
+                padding: "8px 16px",
+                borderRadius: "4px",
+              }}
+              component="a"
+              href="https://frontendproject-mauve.vercel.app/" // Directly navigate to localhost:3000
+            >
+              Appointment
+            </Button>
           </Stack>
         </Stack>
       </AppBar>
@@ -424,8 +401,8 @@ function App() {
         </Routes>
         <ListItems />
       </AppData.Provider>
-     
     </HashRouter>
   );
 }
+
 export default App;
